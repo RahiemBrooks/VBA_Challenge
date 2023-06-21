@@ -1,0 +1,139 @@
+Attribute VB_Name = "Module1"
+
+Option Explicit
+Sub Stock_Analyzer()
+    Dim Row_Number As Long
+    Dim Output_Row_Number As Long
+    Dim Sheet As Variant
+    Dim Number_Rows As Long
+    
+     'columns in worksheets
+    Dim Ticker As String
+    Dim Next_Ticker As String
+    Dim Previous_Ticker As String
+    
+    Dim Close_Value As Currency
+    Dim Open_Value As Currency
+    Dim Yearly_Change As Currency
+    Dim Percent_Yearly_Change As Double
+    
+    Dim Total_Volume As Currency
+    Dim Volume As Currency
+    
+    Dim Greatest_Percent_Increase As Double
+    Dim Greatest_Percent_Decrease As Double
+    Dim Greatest_Total_Volume As Currency
+    
+    Dim Greatest_Percent_Increase_Ticker As String
+    Dim Greatest_Percent_Decrease_Ticker As String
+    Dim Greatest_Total_Volume_Ticker As String
+    
+    
+    MsgBox ("STARTING")
+
+For Each Sheet In Array("2018", "2019", "2020")
+    
+    MsgBox (Sheet)
+    Output_Row_Number = 1
+    
+    Greatest_Percent_Increase = -1
+    Greatest_Percent_Decrease = 1
+    Greatest_Total_Volume = 0
+    
+    ' Put in column headings.
+    Worksheets(Sheet).Cells(Output_Row_Number, 9).Value = "Ticker"
+    Worksheets(Sheet).Cells(Output_Row_Number, 10).Value = "Yearly Change"
+    Worksheets(Sheet).Cells(Output_Row_Number, 11).Value = "Percent Change"
+    Worksheets(Sheet).Cells(Output_Row_Number, 12).Value = "Total Stock Volume"
+    Output_Row_Number = Output_Row_Number + 1
+    
+    Number_Rows = Worksheets(Sheet).UsedRange.Rows.Count
+    
+    For Row_Number = 2 To Number_Rows
+            Ticker = Worksheets(Sheet).Cells(Row_Number, 1).Value
+            Previous_Ticker = Worksheets(Sheet).Cells(Row_Number - 1, 1).Value
+            Next_Ticker = Worksheets(Sheet).Cells(Row_Number + 1, 1).Value
+            
+          Volume = Worksheets(Sheet).Cells(Row_Number, 7).Value
+          If Ticker <> Previous_Ticker Then
+             ' First row for this Ticker.
+             Total_Volume = Volume
+             Else
+                Total_Volume = Total_Volume + Volume
+             End If
+           
+            If Ticker <> Next_Ticker Then
+                    ' Last row for this ticker.
+                    Close_Value = Worksheets(Sheet).Cells(Row_Number, 6).Value
+                    Yearly_Change = Close_Value - Open_Value
+                    Percent_Yearly_Change = Yearly_Change / Open_Value
+                    
+                    If Greatest_Percent_Increase < Percent_Yearly_Change Then
+                    Greatest_Percent_Increase = Percent_Yearly_Change
+                    Greatest_Percent_Increase_Ticker = Ticker
+                    End If
+                    
+                     If Greatest_Percent_Decrease > Percent_Yearly_Change Then
+                    Greatest_Percent_Decrease = Percent_Yearly_Change
+                    Greatest_Percent_Decrease_Ticker = Ticker
+                    End If
+                    
+                     If Greatest_Total_Volume < Total_Volume Then
+                    Greatest_Total_Volume = Total_Volume
+                    Greatest_Total_Volume_Ticker = Ticker
+                    End If
+                    
+                    ' Insert values.
+                    Worksheets(Sheet).Cells(Output_Row_Number, 9).Value = Ticker
+                    Worksheets(Sheet).Cells(Output_Row_Number, 10).Value = Yearly_Change
+                    Worksheets(Sheet).Cells(Output_Row_Number, 11).Value = Percent_Yearly_Change
+                    Worksheets(Sheet).Cells(Output_Row_Number, 12).Value = Total_Volume
+                    
+                    ' Change cell formatting
+                     Worksheets(Sheet).Cells(Output_Row_Number, 10).NumberFormat = "0.00"
+                     Worksheets(Sheet).Cells(Output_Row_Number, 11).NumberFormat = "0.00%"
+                     Worksheets(Sheet).Cells(Output_Row_Number, 12).NumberFormat = "General"
+                      If Yearly_Change <= 0 Then
+                    Worksheets(Sheet).Cells(Output_Row_Number, 10).Interior.Color = vbRed
+                    Else
+                    Worksheets(Sheet).Cells(Output_Row_Number, 10).Interior.Color = vbGreen
+                    End If
+                    
+                    Output_Row_Number = Output_Row_Number + 1
+                    
+                    'Debug.Print Ticker, Yearly_Change, Percent_Yearly_Change, Total_Volume
+            ElseIf Ticker <> Previous_Ticker Then
+            ' First row for this Ticker.
+            Open_Value = Worksheets(Sheet).Cells(Row_Number, 3).Value
+            
+            End If
+            
+     Next
+  
+    
+    ' Put in FINDINGS column headings.
+    Worksheets(Sheet).Cells(1, 16).Value = "Ticker"
+      Worksheets(Sheet).Cells(1, 17).Value = "Value"
+        Worksheets(Sheet).Cells(2, 15).Value = "Greatest % Increase"
+          Worksheets(Sheet).Cells(3, 15).Value = "Greatest % Decrease"
+            Worksheets(Sheet).Cells(4, 15).Value = "Greatest Total Volume"
+            
+            
+       Worksheets(Sheet).Cells(2, 17).Value = Greatest_Percent_Increase
+       Worksheets(Sheet).Cells(2, 17).NumberFormat = "0.00%"
+       Worksheets(Sheet).Cells(2, 16).Value = Greatest_Percent_Increase_Ticker
+       
+              Worksheets(Sheet).Cells(3, 17).Value = Greatest_Percent_Decrease
+              Worksheets(Sheet).Cells(3, 17).NumberFormat = "0.00%"
+       Worksheets(Sheet).Cells(3, 16).Value = Greatest_Percent_Decrease_Ticker
+       
+               Worksheets(Sheet).Cells(4, 17).Value = Greatest_Total_Volume
+               Worksheets(Sheet).Cells(4, 17).NumberFormat = "##0.00E+0"
+       Worksheets(Sheet).Cells(4, 16).Value = Greatest_Total_Volume_Ticker
+            
+      Next
+    
+    MsgBox ("ALL DONE")
+
+End Sub
+
